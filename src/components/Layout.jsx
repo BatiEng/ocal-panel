@@ -27,8 +27,8 @@ export default function Layout() {
           <div className="flex items-center gap-2">
             <span className="text-2xl">🏪</span>
             <div>
-              <p className="text-sm font-bold text-gray-900 leading-tight">Shop Tracker</p>
-              <p className="text-xs text-gray-400">Stock & Sales</p>
+              <p className="text-sm font-bold text-gray-900 leading-tight">ÖCAL</p>
+              <p className="text-xs text-gray-400">Stok ve Satış</p>
             </div>
           </div>
         </div>

@@ -262,11 +262,11 @@ export default function Inventory() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
-                      <span className={`font-semibold ${p.is_low_stock ? 'text-red-600' : 'text-gray-900'}`}>
+                      <span className={`font-semibold ${p.is_low_stock == 1 ? 'text-red-600' : 'text-gray-900'}`}>
                         {p.stock_qty}
                       </span>
                       <span className="text-gray-400 text-xs">{p.unit}</span>
-                      {p.is_low_stock && <span className="badge bg-red-100 text-red-700 text-xs">Kritik</span>}
+                      {p.is_low_stock == 1 && <span className="badge bg-red-100 text-red-700 text-xs">Kritik</span>}
                     </div>
                   </td>
                   <td className="px-4 py-3">

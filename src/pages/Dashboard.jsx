@@ -104,7 +104,7 @@ export default function Dashboard() {
               <span className="text-gray-500">Kritik Stok</span>
               {Number(stock.low_stock_count) > 0
                 ? <span className="badge bg-red-100 text-red-700">⚠ {stock.low_stock_count} ürün</span>
-                : <span className="badge bg-green-100 text-green-700">✓ Normal</span>
+                : <span className="badge bg-green-100 text-green-700">✓ Stok Normal</span>
               }
             </div>
           </div>
