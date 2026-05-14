@@ -70,10 +70,10 @@ function CustomerModal({ customer, onClose, onDone }) {
   )
 }
 
-function CustomerDetail({ customerId, onEdit, onDelete }) {
-  const [data, setData]     = useState(null)
+function CustomerDetail({ customerId, onEdit, onDelete, onBack }) {
+  const [data, setData]       = useState(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab]       = useState('sales')
+  const [tab, setTab]         = useState('sales')
 
   const load = useCallback(() => {
     if (!customerId) return
@@ -86,7 +86,7 @@ function CustomerDetail({ customerId, onEdit, onDelete }) {
   useEffect(() => { load() }, [load])
 
   if (!customerId) return (
-    <div className="flex-1 flex items-center justify-center text-gray-300 text-sm">
+    <div className="hidden md:flex flex-1 items-center justify-center text-gray-300 text-sm">
       ← Müşteri seçin
     </div>
   )
@@ -101,11 +101,19 @@ function CustomerDetail({ customerId, onEdit, onDelete }) {
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Mobile back button */}
+      {onBack && (
+        <button onClick={onBack}
+          className="md:hidden flex items-center gap-2 px-4 py-2.5 bg-white border-b border-gray-100 text-sm text-blue-600 font-medium">
+          ← Müşteri Listesi
+        </button>
+      )}
+
       {/* Customer header */}
-      <div className="p-5 border-b border-gray-100 bg-white">
+      <div className="p-4 border-b border-gray-100 bg-white">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">{data.name}</h2>
+            <h2 className="text-base font-bold text-gray-900">{data.name}</h2>
             <div className="flex items-center gap-3 mt-0.5 flex-wrap text-sm text-gray-500">
               {data.phone && <span>📞 {data.phone}</span>}
               {data.email && <span>✉ {data.email}</span>}
@@ -119,21 +127,20 @@ function CustomerDetail({ customerId, onEdit, onDelete }) {
           </div>
         </div>
 
-        {/* Summary stats */}
-        <div className="grid grid-cols-3 gap-3 mt-4">
-          <div className="bg-green-50 rounded-xl p-3 text-center">
+        <div className="grid grid-cols-3 gap-2 mt-3">
+          <div className="bg-green-50 rounded-xl p-2.5 text-center">
             <p className="text-xs text-green-600">Satışlardan</p>
-            <p className="text-lg font-bold text-green-700">${parseFloat(data.total_sales_amount||0).toFixed(2)}</p>
+            <p className="text-sm font-bold text-green-700">₺{parseFloat(data.total_sales_amount||0).toFixed(0)}</p>
             <p className="text-xs text-green-500">{data.sales?.length || 0} işlem</p>
           </div>
-          <div className="bg-blue-50 rounded-xl p-3 text-center">
+          <div className="bg-blue-50 rounded-xl p-2.5 text-center">
             <p className="text-xs text-blue-600">Servislerden</p>
-            <p className="text-lg font-bold text-blue-700">${parseFloat(data.total_service_amount||0).toFixed(2)}</p>
+            <p className="text-sm font-bold text-blue-700">₺{parseFloat(data.total_service_amount||0).toFixed(0)}</p>
             <p className="text-xs text-blue-500">{data.service_jobs?.length || 0} iş</p>
           </div>
-          <div className="bg-purple-50 rounded-xl p-3 text-center">
-            <p className="text-xs text-purple-600">Toplam Ödeme</p>
-            <p className="text-lg font-bold text-purple-700">${totalSpent.toFixed(2)}</p>
+          <div className="bg-purple-50 rounded-xl p-2.5 text-center">
+            <p className="text-xs text-purple-600">Toplam</p>
+            <p className="text-sm font-bold text-purple-700">₺{totalSpent.toFixed(0)}</p>
             <p className="text-xs text-purple-500">tüm zamanlar</p>
           </div>
         </div>
@@ -154,8 +161,7 @@ function CustomerDetail({ customerId, onEdit, onDelete }) {
         ))}
       </div>
 
-      {/* Tab content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {tab === 'sales' && (
           data.sales?.length === 0
             ? <p className="text-center text-gray-400 py-8 text-sm">Henüz satış yok</p>
@@ -166,11 +172,11 @@ function CustomerDetail({ customerId, onEdit, onDelete }) {
                     <p className="text-sm font-medium text-gray-900 font-mono">{s.sale_number}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{s.sale_date}</p>
                     {s.products && (
-                      <p className="text-xs text-gray-500 mt-1 truncate max-w-[220px]">{s.products}</p>
+                      <p className="text-xs text-gray-500 mt-1 truncate max-w-[200px]">{s.products}</p>
                     )}
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-gray-900">${Number(s.final_amount).toFixed(2)}</p>
+                    <p className="font-bold text-gray-900">₺{Number(s.final_amount).toFixed(2)}</p>
                     <span className="text-xs text-gray-400 capitalize">{s.payment_method}</span>
                   </div>
                 </div>
@@ -197,7 +203,7 @@ function CustomerDetail({ customerId, onEdit, onDelete }) {
                     <p className="text-sm text-gray-700 mt-0.5 truncate">{j.description}</p>
                     <p className="text-xs text-gray-400">{j.created_at?.split(' ')[0]}</p>
                   </div>
-                  <p className="font-bold text-gray-900 shrink-0">${Number(j.total_cost).toFixed(2)}</p>
+                  <p className="font-bold text-gray-900 shrink-0">₺{Number(j.total_cost).toFixed(2)}</p>
                 </div>
               </div>
             ))
@@ -214,7 +220,7 @@ export default function Customers() {
   const [page, setPage]             = useState(1)
   const [loading, setLoading]       = useState(true)
   const [selected, setSelected]     = useState(null)
-  const [modal, setModal]           = useState(null) // null | {} (new) | customer (edit)
+  const [modal, setModal]           = useState(null)
 
   const load = useCallback(() => {
     setLoading(true)
@@ -232,68 +238,71 @@ export default function Customers() {
     load()
   }
 
-  return (
-    <div className="flex h-full overflow-hidden">
-
-      {/* ── Left: Customer list ── */}
-      <div className="w-72 shrink-0 flex flex-col border-r border-gray-100 bg-white overflow-hidden">
-        <div className="p-4 border-b border-gray-100 space-y-3">
-          <div className="flex items-center justify-between">
-            <h1 className="text-base font-bold text-gray-900">Müşteriler</h1>
-            <button onClick={() => setModal({})} className="btn-primary text-xs px-3 py-1.5">+ Ekle</button>
-          </div>
-          <input placeholder="Müşteri ara…" className="input text-sm"
-            value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
+  // Customer list panel
+  const ListPanel = (
+    <div className={`${selected ? 'hidden md:flex' : 'flex'} w-full md:w-72 shrink-0 flex-col border-r border-gray-100 bg-white overflow-hidden`}>
+      <div className="p-4 border-b border-gray-100 space-y-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-base font-bold text-gray-900">Müşteriler</h1>
+          <button onClick={() => setModal({})} className="btn-primary text-xs px-3 py-1.5">+ Ekle</button>
         </div>
-
-        <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
-          {loading
-            ? <div className="text-center py-8 text-gray-400 text-sm">Yükleniyor…</div>
-            : customers.length === 0
-            ? <div className="text-center py-8 text-gray-400 text-sm">Müşteri bulunamadı</div>
-            : customers.map(c => (
-              <button key={c.id} onClick={() => setSelected(c.id)}
-                className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
-                  selected === c.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
-                }`}>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{c.name}</p>
-                    {c.phone && <p className="text-xs text-gray-400">{c.phone}</p>}
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xs font-semibold text-gray-700">
-                      ${(parseFloat(c.total_spent_sales||0)+parseFloat(c.total_spent_services||0)).toFixed(0)}
-                    </p>
-                    <p className="text-xs text-gray-400">{c.total_sales} satış</p>
-                  </div>
-                </div>
-              </button>
-            ))
-          }
-        </div>
-
-        {pagination.last_page > 1 && (
-          <div className="flex justify-between items-center px-3 py-2 border-t border-gray-100">
-            <button disabled={page===1} onClick={() => setPage(p=>p-1)}
-              className="btn-secondary px-2 py-1 text-xs disabled:opacity-40">←</button>
-            <span className="text-xs text-gray-400">{page}/{pagination.last_page}</span>
-            <button disabled={page===pagination.last_page} onClick={() => setPage(p=>p+1)}
-              className="btn-secondary px-2 py-1 text-xs disabled:opacity-40">→</button>
-          </div>
-        )}
+        <input placeholder="Müşteri ara…" className="input text-sm"
+          value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
       </div>
 
-      {/* ── Right: Customer detail ── */}
-      <div className="flex-1 flex overflow-hidden bg-gray-50">
+      <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
+        {loading
+          ? <div className="text-center py-8 text-gray-400 text-sm">Yükleniyor…</div>
+          : customers.length === 0
+          ? <div className="text-center py-8 text-gray-400 text-sm">Müşteri bulunamadı</div>
+          : customers.map(c => (
+            <button key={c.id} onClick={() => setSelected(c.id)}
+              className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
+                selected === c.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
+              }`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{c.name}</p>
+                  {c.phone && <p className="text-xs text-gray-400">{c.phone}</p>}
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-xs font-semibold text-gray-700">
+                    ₺{(parseFloat(c.total_spent_sales||0)+parseFloat(c.total_spent_services||0)).toFixed(0)}
+                  </p>
+                  <p className="text-xs text-gray-400">{c.total_sales} satış</p>
+                </div>
+              </div>
+            </button>
+          ))
+        }
+      </div>
+
+      {pagination.last_page > 1 && (
+        <div className="flex justify-between items-center px-3 py-2 border-t border-gray-100">
+          <button disabled={page===1} onClick={() => setPage(p=>p-1)}
+            className="btn-secondary px-2 py-1 text-xs disabled:opacity-40">←</button>
+          <span className="text-xs text-gray-400">{page}/{pagination.last_page}</span>
+          <button disabled={page===pagination.last_page} onClick={() => setPage(p=>p+1)}
+            className="btn-secondary px-2 py-1 text-xs disabled:opacity-40">→</button>
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="flex h-full overflow-hidden">
+      {ListPanel}
+
+      {/* Detail panel */}
+      <div className={`${selected ? 'flex' : 'hidden md:flex'} flex-1 overflow-hidden bg-gray-50`}>
         <CustomerDetail
           customerId={selected}
+          onBack={() => setSelected(null)}
           onEdit={(c) => setModal(c)}
           onDelete={handleDelete}
         />
       </div>
 
-      {/* Modal */}
       {modal !== null && (
         <CustomerModal
           customer={modal?.id ? modal : null}
@@ -301,7 +310,6 @@ export default function Customers() {
           onDone={() => {
             setModal(null)
             load()
-            // Refresh detail if editing selected customer
             if (modal?.id && modal.id === selected) setSelected(null)
           }}
         />

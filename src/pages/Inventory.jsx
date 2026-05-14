@@ -34,8 +34,7 @@ function StockModal({ product, onClose, onDone }) {
           {error && <p className="text-sm text-red-600 bg-red-50 p-2 rounded-lg">{error}</p>}
           <div className="flex gap-2">
             {['in','out'].map(t => (
-              <button key={t} type="button"
-                onClick={() => setType(t)}
+              <button key={t} type="button" onClick={() => setType(t)}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors ${
                   type === t ? (t==='in' ? 'bg-green-600 text-white border-green-600' : 'bg-red-500 text-white border-red-500')
                              : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}>
@@ -82,7 +81,6 @@ function ProductModal({ product, categories, onClose, onDone }) {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
-
   const setF = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const submit = async (e) => {
@@ -90,11 +88,8 @@ function ProductModal({ product, categories, onClose, onDone }) {
     setError('')
     setLoading(true)
     try {
-      if (isEdit) {
-        await api.updateProduct(product.id, form)
-      } else {
-        await api.createProduct(form)
-      }
+      if (isEdit) await api.updateProduct(product.id, form)
+      else        await api.createProduct(form)
       onDone()
     } catch (err) {
       setError(err.response?.data?.message || 'Ürün kaydedilemedi')
@@ -137,12 +132,12 @@ function ProductModal({ product, categories, onClose, onDone }) {
               </select>
             </div>
             <div>
-              <label className="label">Alış Fiyatı</label>
+              <label className="label">Alış Fiyatı (₺)</label>
               <input type="number" step="0.01" min="0" className="input" value={form.cost_price}
                 onChange={e => setF('cost_price', e.target.value)} placeholder="0.00" />
             </div>
             <div>
-              <label className="label">Satış Fiyatı *</label>
+              <label className="label">Satış Fiyatı (₺) *</label>
               <input type="number" step="0.01" min="0" className="input" value={form.sell_price}
                 onChange={e => setF('sell_price', e.target.value)} required placeholder="0.00" />
             </div>
@@ -192,7 +187,7 @@ export default function Inventory() {
 
   const load = useCallback(() => {
     setLoading(true)
-    api.getProducts({ search, category_id: catFilter, low_stock: lowStock ? 1 : 0, page, per_page: 20 })
+    api.getProducts({ search, category_id: catFilter, low_stock: lowStock ? 1 : 0, page, per_page: 10 })
       .then(({ data }) => { setProducts(data.data); setPagination(data.pagination) })
       .catch(console.error)
       .finally(() => setLoading(false))
@@ -211,18 +206,18 @@ export default function Inventory() {
   }
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-4 md:p-6 space-y-4 overflow-y-auto h-full">
       {/* Başlık */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Stok Yönetimi</h1>
-        <button onClick={() => setProductModal({})} className="btn-primary">+ Ürün Ekle</button>
+        <h1 className="text-lg md:text-xl font-bold text-gray-900">Stok Yönetimi</h1>
+        <button onClick={() => setProductModal({})} className="btn-primary text-sm">+ Ürün Ekle</button>
       </div>
 
       {/* Filtreler */}
-      <div className="flex flex-wrap gap-3">
-        <input type="text" placeholder="Ürün ara…" className="input w-56"
+      <div className="flex flex-wrap gap-2">
+        <input type="text" placeholder="Ürün ara…" className="input flex-1 min-w-[160px]"
           value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
-        <select className="input w-44" value={catFilter}
+        <select className="input w-40"value={catFilter}
           onChange={e => { setCatFilter(e.target.value); setPage(1) }}>
           <option value="">Tüm kategoriler</option>
           {categories.map(c => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
@@ -231,73 +226,84 @@ export default function Inventory() {
           <input type="checkbox" checked={lowStock}
             onChange={e => { setLowStock(e.target.checked); setPage(1) }}
             className="rounded border-gray-300" />
-          Sadece kritik stok
+          Kritik stok
         </label>
       </div>
 
       {/* Tablo */}
       <div className="card overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              {['SKU','Ürün','Kategori','Stok','Fiyat',''].map(h => (
-                <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {loading
-              ? <tr><td colSpan="6" className="text-center py-12 text-gray-400">Yükleniyor…</td></tr>
-              : products.length === 0
-              ? <tr><td colSpan="6" className="text-center py-12 text-gray-400">Ürün bulunamadı</td></tr>
-              : products.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-xs text-gray-400 font-mono">{p.sku}</td>
-                  <td className="px-4 py-3">
-                    <p className="font-medium text-gray-900">{p.name}</p>
-                    {p.description && <p className="text-xs text-gray-400 truncate max-w-[180px]">{p.description}</p>}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    <span className="badge bg-gray-100 text-gray-600">{p.category_icon} {p.category}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`font-semibold ${p.is_low_stock == 1 ? 'text-red-600' : 'text-gray-900'}`}>
-                        {p.stock_qty}
-                      </span>
-                      <span className="text-gray-400 text-xs">{p.unit}</span>
-                      {p.is_low_stock == 1 && <span className="badge bg-red-100 text-red-700 text-xs">Kritik</span>}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="font-semibold text-gray-900">₺{Number(p.sell_price).toFixed(2)}</p>
-                    <p className="text-xs text-gray-400">Alış: ₺{Number(p.cost_price).toFixed(2)}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => setStockModal(p)}
-                        className="btn-secondary px-2 py-1 text-xs">Stok</button>
-                      <button onClick={() => setProductModal(p)}
-                        className="btn-secondary px-2 py-1 text-xs">Düzenle</button>
-                      <button onClick={() => handleDelete(p.id)}
-                        className="px-2 py-1 text-xs rounded-lg text-red-500 hover:bg-red-50 transition-colors">✕</button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[520px]">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                {['SKU','Ürün','Kategori','Stok','Fiyat',''].map(h => (
+                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {loading
+                ? <tr><td colSpan="6" className="text-center py-12 text-gray-400">Yükleniyor…</td></tr>
+                : products.length === 0
+                ? <tr><td colSpan="6" className="text-center py-12 text-gray-400">Ürün bulunamadı</td></tr>
+                : products.map(p => (
+                  <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-xs text-gray-400 font-mono">{p.sku}</td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-gray-900">{p.name}</p>
+                      {p.description && <p className="text-xs text-gray-400 truncate max-w-[160px]">{p.description}</p>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="badge bg-gray-100 text-gray-600 text-xs">{p.category_icon} {p.category}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`font-semibold ${p.is_low_stock == 1 ? 'text-red-600' : 'text-gray-900'}`}>
+                          {p.stock_qty}
+                        </span>
+                        <span className="text-gray-400 text-xs">{p.unit}</span>
+                        {p.is_low_stock == 1 && <span className="badge bg-red-100 text-red-700 text-xs">Kritik</span>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-gray-900">₺{Number(p.sell_price).toFixed(2)}</p>
+                      <p className="text-xs text-gray-400">Alış: ₺{Number(p.cost_price).toFixed(2)}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => setStockModal(p)}
+                          className="btn-secondary px-2 py-1 text-xs">Stok</button>
+                        <button onClick={() => setProductModal(p)}
+                          className="btn-secondary px-2 py-1 text-xs">Düzenle</button>
+                        <button onClick={() => handleDelete(p.id)}
+                          className="px-2 py-1 text-xs rounded-lg text-red-500 hover:bg-red-50 transition-colors">✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
 
         {/* Sayfalama */}
-        {pagination.last_page > 1 && (
+        {pagination.total > 0 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
             <p className="text-xs text-gray-500">
-              {pagination.total} ürün · Sayfa {pagination.current_page} / {pagination.last_page}
+              Toplam <strong>{pagination.total}</strong> ürün · Sayfa {pagination.current_page} / {pagination.last_page}
             </p>
             <div className="flex gap-1">
               <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
                 className="btn-secondary px-3 py-1 text-xs disabled:opacity-40">← Önceki</button>
+              {pagination.last_page > 1 && Array.from({ length: Math.min(pagination.last_page, 5) }, (_, i) => {
+                const p = i + 1
+                return (
+                  <button key={p} onClick={() => setPage(p)}
+                    className={`px-3 py-1 text-xs rounded-lg transition-colors ${
+                      page === p ? 'bg-blue-600 text-white' : 'btn-secondary'
+                    }`}>{p}</button>
+                )
+              })}
               <button disabled={page === pagination.last_page} onClick={() => setPage(p => p + 1)}
                 className="btn-secondary px-3 py-1 text-xs disabled:opacity-40">Sonraki →</button>
             </div>
